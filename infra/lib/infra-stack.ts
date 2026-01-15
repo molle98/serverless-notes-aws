@@ -8,6 +8,16 @@ export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const notesTable = new dynamodb.Table(this, "NotesTable", {
+      tableName: "Notes",
+      partitionKey: {
+        name: "noteId",
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const healthLambda = new lambda.Function(this, "HealthLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
       handler: "index.handler",
@@ -17,16 +27,6 @@ export class InfraStack extends cdk.Stack {
           body: JSON.stringify({ status: "ok" })
         });
       `),
-    });
-
-    const notesTable = new dynamodb.Table(this, "NotesTable", {
-      tableName: "Notes",
-      partitionKey: {
-        name: "noteId",
-        type: dynamodb.AttributeType.STRING,
-      },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const api = new apigw.RestApi(this, "NotesApi", {
