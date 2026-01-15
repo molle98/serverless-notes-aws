@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -16,6 +17,16 @@ export class InfraStack extends cdk.Stack {
           body: JSON.stringify({ status: "ok" })
         });
       `),
+    });
+
+    const notesTable = new dynamodb.Table(this, "NotesTable", {
+      tableName: "Notes",
+      partitionKey: {
+        name: "noteId",
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const api = new apigw.RestApi(this, "NotesApi", {
