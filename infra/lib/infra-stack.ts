@@ -8,7 +8,7 @@ export class InfraStack extends cdk.Stack {
     super(scope, id, props);
 
     const healthLambda = new lambda.Function(this, "HealthLambda", {
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: "index.handler",
       code: lambda.Code.fromInline(`
         exports.handler = async () => ({
