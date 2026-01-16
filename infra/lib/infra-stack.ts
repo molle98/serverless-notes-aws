@@ -3,6 +3,7 @@ import { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -18,6 +19,20 @@ export class InfraStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    const notesLambda = new NodejsFunction(this, "NotesLambda", {
+      runtime: lambda.Runtime.NODEJS_24_X,
+      entry: "../backend/notes/handler.ts",
+      handler: "handler",
+      environment: {
+        TABLE_NAME: notesTable.tableName,
+      },
+      bundling: {
+        forceDockerBundling: false,
+      },
+    });
+
+    notesTable.grantWriteData(notesLambda);
+
     const healthLambda = new lambda.Function(this, "HealthLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
       handler: "index.handler",
@@ -32,6 +47,10 @@ export class InfraStack extends cdk.Stack {
     const api = new apigw.RestApi(this, "NotesApi", {
       restApiName: "Notes API",
     });
+
+    const notesResource = api.root.addResource("notes");
+
+    notesResource.addMethod("POST", new apigw.LambdaIntegration(notesLambda));
 
     const health = api.root.addResource("health");
     health.addMethod("GET", new apigw.LambdaIntegration(healthLambda));
