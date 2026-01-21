@@ -19,9 +19,9 @@ export class InfraStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    const notesLambda = new NodejsFunction(this, "NotesLambda", {
+    const createNotesLambda = new NodejsFunction(this, "NotesLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
-      entry: "../backend/notes/handler.ts",
+      entry: "../backend/notes/create.ts",
       handler: "handler",
       environment: {
         TABLE_NAME: notesTable.tableName,
@@ -31,7 +31,20 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    notesTable.grantWriteData(notesLambda);
+    const listNotesLambda = new NodejsFunction(this, "ListNotesLambda", {
+      runtime: lambda.Runtime.NODEJS_24_X,
+      entry: "../backend/notes/list.ts",
+      handler: "handler",
+      environment: {
+        TABLE_NAME: notesTable.tableName,
+      },
+      bundling: {
+        forceDockerBundling: false,
+      },
+    });
+
+    notesTable.grantWriteData(createNotesLambda);
+    notesTable.grantReadData(listNotesLambda);
 
     const healthLambda = new lambda.Function(this, "HealthLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
@@ -50,7 +63,14 @@ export class InfraStack extends cdk.Stack {
 
     const notesResource = api.root.addResource("notes");
 
-    notesResource.addMethod("POST", new apigw.LambdaIntegration(notesLambda));
+    notesResource.addMethod(
+      "POST",
+      new apigw.LambdaIntegration(createNotesLambda),
+    );
+    notesResource.addMethod(
+      "GET",
+      new apigw.LambdaIntegration(listNotesLambda),
+    );
 
     const health = api.root.addResource("health");
     health.addMethod("GET", new apigw.LambdaIntegration(healthLambda));
