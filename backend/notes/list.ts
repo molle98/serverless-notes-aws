@@ -46,6 +46,7 @@ export const handler = async (event: any) => {
         createdAt: item.createdAt?.S,
       })) ?? [];
 
+    // 5️⃣ Generar nextToken correcto
     const newNextToken = result.LastEvaluatedKey
       ? Buffer.from(JSON.stringify(result.LastEvaluatedKey), "utf-8").toString(
           "base64",
