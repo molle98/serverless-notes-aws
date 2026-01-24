@@ -59,8 +59,6 @@ Simple health-check endpoint.
 { "status": "ok" }
 ```
 
----
-
 ### `POST /notes`
 
 Creates a new note.
@@ -76,8 +74,6 @@ Creates a new note.
 - IAM permissions are restricted to **write-only** access
 
 The idea here is to keep the Lambda lightweight and predictable.
-
----
 
 ### `GET /notes`
 
