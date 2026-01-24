@@ -21,7 +21,7 @@ export class InfraStack extends cdk.Stack {
 
     const createNotesLambda = new NodejsFunction(this, "NotesLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
-      entry: "../backend/notes/create.ts",
+      entry: "../backend/src/notes/create.ts",
       handler: "handler",
       environment: {
         TABLE_NAME: notesTable.tableName,
@@ -33,7 +33,7 @@ export class InfraStack extends cdk.Stack {
 
     const listNotesLambda = new NodejsFunction(this, "ListNotesLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
-      entry: "../backend/notes/list.ts",
+      entry: "../backend/src/notes/list.ts",
       handler: "handler",
       environment: {
         TABLE_NAME: notesTable.tableName,
